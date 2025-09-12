@@ -1,44 +1,13 @@
+#include "File.h"
+
 #include <iostream>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
-#include <ostream>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+
 
 //otp  -i input.txt -o -/path/to/cypher.txt -x 4212 -a 84589 -c 45989 -m 217728
-struct LKGParams {
-    int x;
-    int a;
-    int c;
-    int m;
-};
 
-class File {
-    private:
-        unsigned long int size;//размер файла в байтах
-        char* content;
-        const char* file_name;
-    public:
-        File(std::string& input) {
-            file_name = input.c_str();
-            int fd = open(file_name, O_RDONLY);
-            if (fd == -1) {
-                std::cerr<<"error in opening file\n";
-                close(fd);
-            }
-
-            else {
-                struct stat st;
-                fstat(fd, &st);
-                size = st.st_size;
-                std::cout<<size<<'\n';
-                close(fd);
-            }
-        }
-
-};
 
 int main(int argc, char** argv)
 {
@@ -74,5 +43,6 @@ int main(int argc, char** argv)
         }
     }
     File inputFile(input);
+    inputFile.ReadFile();
     return 0;
 }
