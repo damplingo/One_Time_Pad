@@ -9,28 +9,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-/*File::File(std::string& input) {
-    file_name = input.c_str();
-    size = 0;
-    int fd = open(file_name, O_RDONLY);
-    if (fd == -1) {
-        std::cerr<<"error in opening file\n";
-        close(fd);
-    }
-    else {
-        struct stat st;
-        fstat(fd, &st);
-        size = st.st_size;
-        close(fd);
-    }
-}*/
-
-void File::ReadFile(std::string& input) {
+bool File::ReadFile(std::string& input) {
     file_name = input;
     int fd = open(file_name.c_str(), O_RDONLY);
     if (fd == -1) {
         std::cerr<<"error in opening file\n";
         close(fd);
+        return false;
     }
     else {
         struct stat st;
@@ -39,10 +24,8 @@ void File::ReadFile(std::string& input) {
         content.resize(size);
         read(fd, content.data(), size);
         close(fd);
+        return true;
     }
-    /*for (int i = 0; i < size; ++i) {
-        std::cout<<content[i]<<'\n';
-    }*/
 }
 
 void File::CreateOutputFile(const std::string& input, std::vector<char>& new_content) {
@@ -56,9 +39,11 @@ void File::CreateOutputFile(const std::string& input, std::vector<char>& new_con
     else {
         content = new_content;
         size = new_content.size();
-        //std::cout<<size<<'\n';
         int res = write(fd, content.data(), size);
-        //std::cout<<strlen(content.data())<<'\n';
+        if (res == -1) {
+            std::cerr<<"error writing to file "<<std::strerror(errno)<<"\n";
+            
+        }
         close(fd);
     }
 }
@@ -75,7 +60,6 @@ void* pSequenceGenerate(void* arg) {
     sequenceParams->sequence[0] = sequenceParams->params.x;
     for (int i = 1; i < sequenceParams->sequence.size(); ++i) {
         sequenceParams->sequence[i] = (sequenceParams->params.a*sequenceParams->sequence[i-1]+sequenceParams->params.c)%sequenceParams->params.m;
-        //std::cout<<sequenceParams->sequence[i]<<'\n';
     }
     pthread_exit(NULL);
 }

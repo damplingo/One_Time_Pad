@@ -24,7 +24,7 @@ struct ThreadContext {
 
 void* WorkerFunc(void* context) {
     ThreadContext* thisContext = static_cast<ThreadContext*>(context);
-    printf("Поток %d начал работу: индексы %d - %d, барьер %d\n", thisContext->thread_id, thisContext->left, thisContext->right, thisContext->barrier);
+    printf("Поток %d начал работу: индексы %d - %d\n", thisContext->thread_id, thisContext->left, thisContext->right);
     for (int i = thisContext->left; i < thisContext->right; ++i) {
         thisContext->result[i] = thisContext->content[i] ^ thisContext->notepad[i];
     }
@@ -114,33 +114,39 @@ int main(int argc, char** argv)
         }
     }
     File inputFile;
-    inputFile.ReadFile(input);
+    bool openStatus = inputFile.ReadFile(input);
+
+    if (!openStatus) {
+        return 1;
+    }
+
     std::vector<char> pSeq(inputFile.GetSize());
     genSequenceParams genThreadParams{param, pSeq};
     pthread_t gen_pthread;
     pthread_create(&gen_pthread, NULL, pSequenceGenerate, &genThreadParams);
     int join_res = pthread_join(gen_pthread, NULL);
     if (join_res != 0) {
-        int err = errno;
         std::cout<<"ERROR IN JOIN "<<std::strerror(errno)<<'\n';
+        return 1;
     }
     int numsThreads = GetCpuCores();
     std::vector<char> result(inputFile.GetSize());
     std::vector<pthread_t> threads(numsThreads);
     pthread_barrier_t barrier;
     pthread_barrier_init(&barrier, NULL, numsThreads + 1);
-    /*if (!CreateThreads(barrier, numsThreads, pSeq, inputFile.GetContent(), result, threads)) {
+    if (!CreateThreads(&barrier, numsThreads, pSeq, inputFile.GetContent(), result, threads)) {
         return 1;
     }
-    else {
-        std::cout<<"!\n";
-    }*/
-    CreateThreads(&barrier, numsThreads, pSeq, inputFile.GetContent(), result, threads);
-    //usleep(1000000);
-    //std::cout << "Главный поток ждет..., " << std::endl;
-    printf("Главный поток ждет %d\n", &barrier);
+    printf("Главный поток ждет\n");
     int wait_result = pthread_barrier_wait(&barrier);
-    std::cout << "Главный поток продолжает\n" << std::endl;
+    printf("Главный поток продолжает\n");
+    for (int i = 0; i < numsThreads; ++i) {
+        int join_res = pthread_join(threads[i], NULL);
+        if (join_res != 0) {
+            std::cout<<"ERROR IN JOIN "<<std::strerror(errno)<<'\n';
+            return 1;
+        }
+    }
     File outputFile;
     outputFile.CreateOutputFile(output, result);
     pthread_barrier_destroy(&barrier);

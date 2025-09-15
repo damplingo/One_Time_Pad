@@ -22,8 +22,7 @@ class File {
         std::vector<char>  content;
         std::string file_name;
     public:
-        //File(std::string& input);
-        void ReadFile(std::string& input);//функция чтения файла в память
+        bool ReadFile(std::string& input);//функция чтения файла в память
         unsigned long int GetSize();
         void CreateOutputFile(const std::string& name, std::vector<char>& new_content);
         std::vector<char> GetContent();
