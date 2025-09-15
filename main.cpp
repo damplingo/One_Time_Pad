@@ -9,9 +9,10 @@
 #include <pthread.h>
 #include <vector>
 
-using ll = long long;
 
 //otp  -i input.txt -o output.txt -x 4212 -a 84589 -c 45989 -m 217728
+
+pthread_barrier_t barrier;
 
 void ChipherFunc(int l, int r, std::vector<char>& pSeq, std::vector<char>& content) {
     for (int i = l; i < r; ++i) {
@@ -63,11 +64,9 @@ int main(int argc, char** argv)
         int err = errno;
         std::cout<<"ERROR IN JOIN "<<std::strerror(errno)<<'\n';
     }
-    std::vector<char> content(inputFile.GetContent(), inputFile.GetContent() + inputFile.GetSize());
+    std::vector<char> content = inputFile.GetContent();
     ChipherFunc(0, pSeq.size(), pSeq, content);
-
-    
     File outputFile;
-    outputFile.CreateOutputFile(output, pSeq.data());
+    outputFile.CreateOutputFile(output, pSeq);
     return 0;
 }

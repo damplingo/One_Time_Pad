@@ -26,8 +26,8 @@
 }*/
 
 void File::ReadFile(std::string& input) {
-    file_name = input.c_str();
-    int fd = open(file_name, O_RDONLY);
+    file_name = input;
+    int fd = open(file_name.c_str(), O_RDONLY);
     if (fd == -1) {
         std::cerr<<"error in opening file\n";
         close(fd);
@@ -36,8 +36,8 @@ void File::ReadFile(std::string& input) {
         struct stat st;
         fstat(fd, &st);
         size = st.st_size;
-        content = new char[size];
-        read(fd, content, size);
+        content.resize(size);
+        read(fd, content.data(), size);
         close(fd);
     }
     /*for (int i = 0; i < size; ++i) {
@@ -45,17 +45,20 @@ void File::ReadFile(std::string& input) {
     }*/
 }
 
-void File::CreateOutputFile(const std::string& input, char* new_content) {
-    file_name = input.c_str();
-    int fd = open(file_name, O_RDWR|O_CREAT);
+void File::CreateOutputFile(const std::string& input, std::vector<char>& new_content) {
+    file_name = input;
+    int fd = open(file_name.c_str(),  O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    //int fd = creat(file_name.c_str(), );
     if (fd == -1) {
         std::cerr<<"error in creating file\n";
         close(fd);
     }
     else {
         content = new_content;
-        size = strlen(new_content);
-        write(fd,new_content, size);
+        size = new_content.size();
+        //std::cout<<size<<'\n';
+        int res = write(fd, content.data(), size);
+        //std::cout<<strlen(content.data())<<'\n';
         close(fd);
     }
 }
@@ -63,9 +66,10 @@ unsigned long int File::GetSize() {
     return size;
 }
 
-char* File::GetContent() {
+std::vector<char> File::GetContent() {
     return content;
 }
+
 void* pSequenceGenerate(void* arg) {
     genSequenceParams* sequenceParams = (genSequenceParams*)arg;
     sequenceParams->sequence[0] = sequenceParams->params.x;
