@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-using ll = long long;
 
 struct LKGParams {
     int x;
@@ -24,7 +23,7 @@ class File {
     public:
         bool ReadFile(std::string& input);//функция чтения файла в память
         unsigned long int GetSize();
-        void CreateOutputFile(const std::string& name, std::vector<char>& new_content);
+        void CreateOutputFile(const std::string& name, std::vector<char>& new_content);//создание файла
         std::vector<char> GetContent();
 };
 

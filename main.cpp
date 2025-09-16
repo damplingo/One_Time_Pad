@@ -9,9 +9,6 @@
 #include <pthread.h>
 #include <vector>
 
-
-//otp  -i input.txt -o output.txt -x 4212 -a 84589 -c 45989 -m 217728
-
 struct ThreadContext {
     pthread_barrier_t* barrier;
     const std::vector<char>&  notepad;
@@ -74,14 +71,8 @@ int GetCpuCores() {
 }
 
 
-void ChipherFunc(int l, int r, std::vector<char>& pSeq, std::vector<char>& content) {
-    for (int i = l; i < r; ++i) {
-        pSeq[i] = content[i]^pSeq[i];
-    }
-}
-
 int main(int argc, char** argv)
-{
+{   
     std::string input;
     std::string output;
     char opt;

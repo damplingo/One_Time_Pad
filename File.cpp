@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#define CHUNK_SIZE (4 * 1024)    
+
 bool File::ReadFile(std::string& input) {
     file_name = input;
     int fd = open(file_name.c_str(), O_RDONLY);
@@ -20,6 +22,11 @@ bool File::ReadFile(std::string& input) {
     else {
         struct stat st;
         fstat(fd, &st);
+        if (st.st_size > CHUNK_SIZE) {
+            std::cerr<<"file size exceeds CHUNK_SIZE = "<<CHUNK_SIZE<<'\n';
+            close(fd);
+            return false;
+        }
         size = st.st_size;
         content.resize(size);
         read(fd, content.data(), size);
@@ -31,7 +38,6 @@ bool File::ReadFile(std::string& input) {
 void File::CreateOutputFile(const std::string& input, std::vector<char>& new_content) {
     file_name = input;
     int fd = open(file_name.c_str(),  O_CREAT | O_WRONLY | O_TRUNC, 0644);
-    //int fd = creat(file_name.c_str(), );
     if (fd == -1) {
         std::cerr<<"error in creating file\n";
         close(fd);
@@ -57,9 +63,11 @@ std::vector<char> File::GetContent() {
 
 void* pSequenceGenerate(void* arg) {
     genSequenceParams* sequenceParams = (genSequenceParams*)arg;
-    sequenceParams->sequence[0] = sequenceParams->params.x;
-    for (int i = 1; i < sequenceParams->sequence.size(); ++i) {
-        sequenceParams->sequence[i] = (sequenceParams->params.a*sequenceParams->sequence[i-1]+sequenceParams->params.c)%sequenceParams->params.m;
+    if (sequenceParams->sequence.size() > 0) {
+        sequenceParams->sequence[0] = sequenceParams->params.x;
+        for (int i = 1; i < sequenceParams->sequence.size(); ++i) {
+            sequenceParams->sequence[i] = (sequenceParams->params.a*sequenceParams->sequence[i-1]+sequenceParams->params.c)%sequenceParams->params.m;
+        }
     }
     pthread_exit(NULL);
 }
